@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GKV Krankenkassen Übersicht 2026 | Kontaktdaten & Anträge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F2ED;
+    --surface: #FDFCFA;
+    --surface2: #EDEAE3;
+    --text: #1A1816;
+    --text-muted: #6B6660;
+    --text-light: #9B9590;
+    --accent: #1A4F3A;
+    --accent-light: #E8F0EC;
+    --accent2: #8B3A1C;
+    --accent2-light: #F5EAE4;
+    --blue: #1A3A6B;
+    --blue-light: #E4EBF5;
+    --border: rgba(26,24,22,0.1);
+    --border-strong: rgba(26,24,22,0.2);
+    --radius: 12px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: var(--accent); color: white;
+    padding: 3rem 2rem 2.5rem; position: relative; overflow: hidden;
+  }
+  header::before { content:''; position:absolute; top:-80px; right:-80px; width:320px; height:320px; background:rgba(255,255,255,0.04); border-radius:50%; }
+  header::after  { content:''; position:absolute; bottom:-40px; left:30%; width:200px; height:200px; background:rgba(255,255,255,0.03); border-radius:50%; }
+  .header-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+  .header-tag { font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:0.75rem; }
+  header h1 { font-family:'Instrument Serif',serif; font-size:clamp(2rem,4vw,3rem); font-weight:400; line-height:1.15; margin-bottom:0.75rem; color:white; }
+  header h1 em { font-style:italic; color:rgba(255,255,255,0.7); }
+  .header-sub { font-size:14px; color:rgba(255,255,255,0.6); max-width:580px; line-height:1.6; }
+  .header-stats { display:flex; gap:2rem; margin-top:2rem; padding-top:2rem; border-top:1px solid rgba(255,255,255,0.1); flex-wrap:wrap; }
+  .hstat-num { font-family:'Instrument Serif',serif; font-size:2rem; color:white; line-height:1; }
+  .hstat-lbl { font-size:12px; color:rgba(255,255,255,0.5); margin-top:3px; }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  .controls-bar {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:1.25rem 1.5rem; margin-bottom:1.5rem;
+    display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;
+  }
+  .search-wrap { flex:1; min-width:200px; position:relative; }
+  .search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-light); }
+  .search-wrap input {
+    width:100%; padding:9px 12px 9px 36px;
+    border:1px solid var(--border-strong); border-radius:var(--radius-sm);
+    background:var(--bg); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); outline:none; transition:border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color:var(--accent); }
+  .search-wrap input::placeholder { color:var(--text-light); }
+  select {
+    padding:9px 32px 9px 12px; border:1px solid var(--border-strong); border-radius:var(--radius-sm);
+    background:var(--bg); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text);
+    outline:none; cursor:pointer; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6660' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center; transition:border-color 0.2s;
+  }
+  select:focus { border-color:var(--accent); }
+
+  .chip-bar { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem; }
+  .chip { padding:6px 14px; border-radius:100px; font-size:13px; font-weight:500; cursor:pointer; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-muted); transition:all 0.15s; user-select:none; }
+  .chip:hover { border-color:var(--accent); color:var(--accent); }
+  .chip.active-bund { background:var(--blue); color:white; border-color:var(--blue); }
+  .chip.active-reg  { background:var(--accent); color:white; border-color:var(--accent); }
+  .chip.active-all  { background:var(--text); color:white; border-color:var(--text); }
+
+  .summary-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0.75rem; margin-bottom:1.5rem; }
+  .sum-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1rem 1.25rem; transition:transform 0.15s; }
+  .sum-card:hover { transform:translateY(-2px); }
+  .sum-num { font-family:'Instrument Serif',serif; font-size:2rem; line-height:1; margin-bottom:4px; }
+  .sum-card.c-all .sum-num  { color:var(--text); }
+  .sum-card.c-bund .sum-num { color:var(--blue); }
+  .sum-card.c-reg  .sum-num { color:var(--accent); }
+  .sum-lbl { font-size:12px; color:var(--text-light); font-weight:500; letter-spacing:0.03em; }
+
+  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .table-header-row { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; border-bottom:1px solid var(--border); }
+  .table-title { font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.04em; text-transform:uppercase; }
+  .result-count { font-size:13px; color:var(--text-light); }
+  .table-scroll { overflow-x:auto; }
+
+  table { width:100%; border-collapse:collapse; min-width:800px; }
+  thead th { padding:10px 14px; text-align:left; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-light); border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:2; white-space:nowrap; }
+
+  /* Main row */
+  tbody tr.main-row { border-bottom:1px solid var(--border); transition:background 0.1s; cursor:pointer; }
+  tbody tr.main-row:hover { background:var(--bg); }
+  tbody tr.main-row.open { background:var(--accent-light); }
+  tbody tr.main-row.open td { border-bottom:none; }
+
+  /* Detail row */
+  tbody tr.detail-row { display:none; }
+  tbody tr.detail-row.visible { display:table-row; }
+  tbody tr.detail-row td { padding:0; border-bottom:1px solid var(--border); background:var(--accent-light); }
+  .detail-inner {
+    padding:1rem 1.5rem 1.25rem;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:1rem;
+  }
+  .detail-block { }
+  .detail-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-light); margin-bottom:4px; }
+  .detail-val { font-size:13px; color:var(--text-muted); line-height:1.6; }
+  .detail-val a { color:var(--accent); text-decoration:none; }
+  .detail-val a:hover { text-decoration:underline; }
+  .detail-empty { font-size:12px; color:var(--text-light); font-style:italic; }
+
+  td { padding:11px 14px; font-size:13.5px; vertical-align:middle; }
+  .td-name { font-weight:500; color:var(--text); }
+  .td-name a { color:var(--text); text-decoration:none; }
+  .td-name a:hover { color:var(--accent); text-decoration:underline; }
+  .td-bl { font-size:12px; color:var(--text-muted); max-width:300px; line-height:1.5; }
+  .td-zb { font-size:13px; font-weight:500; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .zb-low  { color:var(--accent); }
+  .zb-high { color:var(--accent2); }
+  .zb-mid  { color:var(--text-muted); }
+
+  .badge { display:inline-block; padding:3px 9px; border-radius:100px; font-size:11px; font-weight:600; letter-spacing:0.03em; white-space:nowrap; }
+  .b-bund { background:var(--blue-light); color:var(--blue); }
+  .b-reg  { background:var(--accent-light); color:var(--accent); }
+
+  .ant-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:var(--radius-sm); font-size:12px; font-weight:500; text-decoration:none; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-muted); transition:all 0.15s; white-space:nowrap; }
+  .ant-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+  .ant-btn.pdf:hover { border-color:var(--accent2); color:var(--accent2); background:var(--accent2-light); }
+  .ant-none { font-size:12px; color:var(--text-light); }
+
+  .expand-btn { width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:transparent; border:1px solid var(--border-strong); cursor:pointer; transition:all 0.2s; flex-shrink:0; }
+  .expand-btn svg { transition:transform 0.25s; }
+  .main-row.open .expand-btn { background:var(--accent); border-color:var(--accent); }
+  .main-row.open .expand-btn svg { transform:rotate(180deg); stroke:white; }
+
+  .contact-pills { display:flex; flex-wrap:wrap; gap:5px; }
+  .contact-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:11px; border:1px solid var(--border-strong); color:var(--text-muted); background:var(--surface); white-space:nowrap; }
+  .contact-pill.has-data { color:var(--accent); border-color:var(--accent); background:var(--accent-light); }
+  .contact-pill.no-data  { color:var(--text-light); font-style:italic; }
+
+  .no-results { text-align:center; padding:4rem 2rem; color:var(--text-light); display:none; }
+  .no-results p:first-child { font-family:'Instrument Serif',serif; font-size:1.5rem; color:var(--text-muted); margin-bottom:0.5rem; }
+
+  footer { text-align:center; padding:2rem; color:var(--text-light); font-size:12px; line-height:1.8; border-top:1px solid var(--border); margin-top:2rem; }
+  footer strong { color:var(--text-muted); }
+
+  @media(max-width:600px){ header{padding:2rem 1.25rem;} main{padding:1rem 1.25rem;} .header-stats{gap:1.25rem;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">Versicherungsmakler · Gesetzliche Krankenversicherung</div>
+    <h1>Alle GKV<br><em>auf einen Blick</em></h1>
+    <p class="header-sub">Wählbare gesetzliche Krankenkassen in Deutschland — mit Postanschrift, E-Mail, Öffnungsbereich und Antragstyp. Kasse anklicken für Kontaktdetails. Stand Juni 2026.</p>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-num">~85</div><div class="hstat-lbl">Wählbare Kassen</div></div>
+      <div class="hstat"><div class="hstat-num">~47</div><div class="hstat-lbl">Bundesweit offen</div></div>
+      <div class="hstat"><div class="hstat-num">11</div><div class="hstat-lbl">AOK-Regionen</div></div>
+      <div class="hstat"><div class="hstat-num">6</div><div class="hstat-lbl">Ersatzkassen</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="controls-bar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search" placeholder="Krankenkasse suchen …" oninput="filter()">
+    </div>
+    <select id="sel-bl" onchange="filter()">
+      <option value="">Alle Bundesländer</option>
+      <option>Baden-Württemberg</option><option>Bayern</option><option>Berlin</option>
+      <option>Brandenburg</option><option>Bremen</option><option>Hamburg</option>
+      <option>Hessen</option><option>Mecklenburg-Vorpommern</option><option>Niedersachsen</option>
+      <option>Nordrhein-Westfalen</option><option>Rheinland-Pfalz</option><option>Saarland</option>
+      <option>Sachsen</option><option>Sachsen-Anhalt</option><option>Schleswig-Holstein</option>
+      <option>Thüringen</option>
+    </select>
+    <select id="sel-antrag" onchange="filter()">
+      <option value="">Alle Antragstypen</option>
+      <option value="online">Online-Antrag</option>
+      <option value="pdf">PDF-Antrag</option>
+      <option value="keiner">Kein Antrag</option>
+    </select>
+  </div>
+
+  <div class="chip-bar">
+    <div class="chip active-all" onclick="setTyp(this,'')">Alle Kassen</div>
+    <div class="chip" onclick="setTyp(this,'bundesweit')">🔵 Bundesweit</div>
+    <div class="chip" onclick="setTyp(this,'regional')">🟢 Regional</div>
+  </div>
+
+  <div class="summary-row">
+    <div class="sum-card c-all"><div class="sum-num" id="cnt-ges">0</div><div class="sum-lbl">Ergebnisse</div></div>
+    <div class="sum-card c-bund"><div class="sum-num" id="cnt-bund">0</div><div class="sum-lbl">Bundesweit</div></div>
+    <div class="sum-card c-reg"><div class="sum-num" id="cnt-reg">0</div><div class="sum-lbl">Regional</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header-row">
+      <span class="table-title">Krankenkassen — Zeile anklicken für Kontaktdetails</span>
+      <span class="result-count" id="result-label">—</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:3%"></th>
+            <th style="width:22%">Name</th>
+            <th style="width:11%">Öffnung</th>
+            <th style="width:29%">Geöffnet in</th>
+            <th style="width:10%">Zusatzbeitrag</th>
+            <th style="width:13%">Antrag</th>
+            <th style="width:12%">Kontakt vorhanden</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="no-results" id="no-results">
+      <p>Keine Ergebnisse</p>
+      <p>Versuche andere Suchbegriffe oder setze die Filter zurück.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <strong>Datenstand: Juni 2026</strong> · Quelle: GKV-Spitzenverband, Impressa und Kontaktseiten der jeweiligen Kassen<br>
+  Angaben ohne Gewähr. Bitte prüfe aktuelle Beitragssätze und Kontaktdaten direkt bei der jeweiligen Kasse.<br><br>
+  Erstellt für <strong>Erfurt.Versicherung · Seguro Alemania</strong>
+</footer>
+
+<script>
+const KK = [
+  // ─── AOK ───────────────────────────────────────────────────────────
+  {name:"AOK Baden-Württemberg",typ:"regional",bl:["Baden-Württemberg"],zb:2.99,url:"https://www.aok.de/pk/bawue/",antrag:"online",
+   post:"AOK Baden-Württemberg\nHauptverwaltung\nPresselstraße 19\n70191 Stuttgart",email:"service@bw.aok.de"},
+  {name:"AOK Bayern",typ:"regional",bl:["Bayern"],zb:2.69,url:"https://www.aok.de/pk/bayern/",antrag:"online",
+   post:"AOK Bayern\nCentermanagement\n81364 München",email:"info@by.aok.de"},
+  {name:"AOK Bremen/Bremerhaven",typ:"regional",bl:["Bremen"],zb:3.29,url:"https://www.aok.de/pk/bremen/",antrag:"pdf",
+   post:"AOK Bremen/Bremerhaven\nSommerstraße 47\n28215 Bremen",email:"service@hb.aok.de"},
+  {name:"AOK Hessen",typ:"regional",bl:["Hessen"],zb:2.98,url:"https://www.aok.de/pk/hessen/",antrag:"online",
+   post:"AOK Hessen\nOsterpostfach\n60271 Frankfurt am Main",email:"info@he.aok.de"},
+  {name:"AOK Niedersachsen",typ:"regional",bl:["Niedersachsen"],zb:2.98,url:"https://www.aok.de/pk/niedersachsen/",antrag:"pdf",
+   post:"AOK Niedersachsen\nBriefpostfach\n30142 Hannover",email:"info@ni.aok.de"},
+  {name:"AOK Nordost",typ:"regional",bl:["Berlin","Brandenburg","Mecklenburg-Vorpommern"],zb:3.50,url:"https://www.aok.de/pk/nordost/",antrag:"online",
+   post:"AOK Nordost\n10696 Berlin",email:"service@nordost.aok.de"},
+  {name:"AOK NordWest",typ:"regional",bl:["Nordrhein-Westfalen","Schleswig-Holstein"],zb:2.99,url:"https://www.aok.de/pk/nordwest/",antrag:"online",
+   post:"AOK NordWest\n44780 Bochum",email:"service@nordwest.aok.de"},
+  {name:"AOK PLUS",typ:"regional",bl:["Sachsen","Thüringen"],zb:3.10,url:"https://www.aok.de/pk/plus/",antrag:"online",
+   post:"AOK PLUS\nPräsident-Müller-Straße 2\n09116 Chemnitz",email:"info@plus.aok.de"},
+  {name:"AOK Rheinland-Pfalz/Saarland",typ:"regional",bl:["Rheinland-Pfalz","Saarland"],zb:2.47,url:"https://www.aok.de/pk/rheinland-pfalz-saarland/",antrag:"online",
+   post:"AOK Rheinland-Pfalz/Saarland\nHerriotstraße 1\n67065 Ludwigshafen",email:"service@rps.aok.de"},
+  {name:"AOK Rheinland/Hamburg",typ:"regional",bl:["Hamburg","Nordrhein-Westfalen"],zb:3.29,url:"https://www.aok.de/pk/rheinland/",antrag:"pdf",
+   post:"AOK Rheinland/Hamburg\nColonia-Allee 10–20\n51067 Köln",email:"service@rh.aok.de"},
+  {name:"AOK Sachsen-Anhalt",typ:"regional",bl:["Sachsen-Anhalt"],zb:2.89,url:"https://www.aok.de/pk/sachsen-anhalt/",antrag:"online",
+   post:"AOK Sachsen-Anhalt\nLütticher Straße 1\n39128 Magdeburg",email:"info@an.aok.de"},
+
+  // ─── Ersatzkassen ──────────────────────────────────────────────────
+  {name:"BARMER",typ:"bundesweit",bl:[],zb:3.29,url:"https://www.barmer.de/",antrag:"online",
+   post:"BARMER\n42266 Wuppertal",email:"Kontaktformular auf barmer.de",emaillink:"https://www.barmer.de/persoenliche-beratung"},
+  {name:"DAK-Gesundheit",typ:"bundesweit",bl:[],zb:2.79,url:"https://www.dak.de/",antrag:"online",
+   post:"DAK-Gesundheit Postzentrum\n22788 Hamburg\n(länderspezifische Postzentren unter dak.de)",email:"Kontaktformular auf dak.de",emaillink:"https://www.dak.de/dak/kontaktuebersicht_2840"},
+  {name:"Handelskrankenkasse (hkk)",typ:"bundesweit",bl:[],zb:1.98,url:"https://www.hkk.de/",antrag:"online",
+   post:"hkk Krankenkasse\n28185 Bremen",email:"info@hkk.de"},
+  {name:"HEK – Hanseatische Krankenkasse",typ:"bundesweit",bl:[],zb:2.49,url:"https://www.hek.de/",antrag:"online",
+   post:"HEK – Hanseatische Krankenkasse\n22039 Hamburg",email:"kontakt@hek.de"},
+  {name:"KKH Kaufmännische Krankenkasse",typ:"bundesweit",bl:[],zb:2.98,url:"https://www.kkh.de/",antrag:"online",
+   post:"KKH Kaufmännische Krankenkasse\n30125 Hannover",email:"service@kkh.de"},
+  {name:"Techniker Krankenkasse (TK)",typ:"bundesweit",bl:[],zb:2.45,url:"https://www.tk.de/",antrag:"online",
+   post:"Techniker Krankenkasse\n20904 Hamburg",email:"Kontaktformular / Meine TK-Portal",emaillink:"https://www.tk.de/techniker/kontakt-2002308"},
+
+  // ─── IKK ───────────────────────────────────────────────────────────
+  {name:"IKK Brandenburg und Berlin",typ:"regional",bl:["Berlin","Brandenburg"],zb:2.99,url:"https://www.ikk-bb.de/",antrag:"online",
+   post:"IKK Brandenburg und Berlin\nKasseler Straße 59\n14532 Kleinmachnow",email:"info@ikk-bb.de"},
+  {name:"IKK classic",typ:"bundesweit",bl:[],zb:2.40,url:"https://www.ikk-classic.de/",antrag:"online",
+   post:"IKK classic\n04063 Leipzig",email:"info@ikk-classic.de"},
+  {name:"IKK gesund plus",typ:"regional",bl:["Sachsen","Sachsen-Anhalt","Thüringen"],zb:2.79,url:"https://www.ikk-gesundplus.de/",antrag:"online",
+   post:"IKK gesund plus\nKleine Märkerstraße 1\n39104 Magdeburg",email:"info@ikk-gesundplus.de"},
+  {name:"IKK Nord",typ:"regional",bl:["Hamburg","Mecklenburg-Vorpommern","Schleswig-Holstein"],zb:2.90,url:"https://www.ikk-nord.de/",antrag:"online",
+   post:"IKK Nord\nHamburgische Straße 47\n22083 Hamburg",email:"info@ikk-nord.de"},
+  {name:"IKK Südwest",typ:"regional",bl:["Hessen","Rheinland-Pfalz","Saarland","Thüringen"],zb:2.79,url:"https://www.ikk-suedwest.de/",antrag:"online",
+   post:"IKK Südwest\nSpaldingstraße 110\n20097 Hamburg",email:"info@ikk-suedwest.de"},
+
+  // ─── KNAPPSCHAFT ───────────────────────────────────────────────────
+  {name:"KNAPPSCHAFT",typ:"bundesweit",bl:[],zb:3.40,url:"https://www.knappschaft.de/",antrag:"online",
+   post:"KNAPPSCHAFT\n44781 Bochum",email:"willkommen@meine.knappschaft.de"},
+
+  // ─── BKK bundesweit ────────────────────────────────────────────────
+  {name:"Audi BKK",typ:"bundesweit",bl:[],zb:2.60,url:"https://www.audibkk.de/",antrag:"online",
+   post:"Audi BKK\nAudistraße 1\n85045 Ingolstadt",email:"info@audibkk.de"},
+  {name:"BAHN-BKK",typ:"bundesweit",bl:[],zb:3.65,url:"https://www.bahn-bkk.de/",antrag:"online",
+   post:"BAHN-BKK\nChlebovicestraße 1\n60326 Frankfurt am Main",email:"info@bahn-bkk.de"},
+  {name:"BIG direkt gesund",typ:"bundesweit",bl:[],zb:3.69,url:"https://www.big-direkt.de/",antrag:"online",
+   post:"BIG direkt gesund\nArndtstraße 19–23\n44135 Dortmund",email:"info@big-direkt.de"},
+  {name:"BKK GILDEMEISTER SEIDENSTICKER",typ:"bundesweit",bl:[],zb:3.40,url:"https://www.bkk-gs.de/",antrag:"online",
+   post:"BKK GILDEMEISTER SEIDENSTICKER\nOhligsmühle 23\n33602 Bielefeld",email:"info@bkk-gs.de"},
+  {name:"BKK Linde",typ:"bundesweit",bl:[],zb:2.99,url:"https://www.bkk-linde.de/",antrag:"online",
+   post:"BKK Linde\nSohnstraße 65\n40237 Düsseldorf",email:"info@bkk-linde.de"},
+  {name:"BKK Pfalz",typ:"bundesweit",bl:[],zb:3.90,url:"https://www.bkk-pfalz.de/",antrag:"online",
+   post:"BKK Pfalz\nLudwig-Gutmann-Straße 12\n67071 Ludwigshafen",email:"info@bkk-pfalz.de"},
+  {name:"BKK ProVita",typ:"bundesweit",bl:[],zb:3.79,url:"https://www.bkk-provita.de/",antrag:"online",
+   post:"BKK ProVita\nEmil-Riedl-Weg 6\n85622 Feldkirchen",email:"service@bkk-provita.de"},
+  {name:"BKK VerbundPlus",typ:"bundesweit",bl:[],zb:3.89,url:"https://www.bkk-verbundplus.de/",antrag:"online",
+   post:"BKK VerbundPlus\nTatzinger Weg 1\n84503 Altötting",email:"service@bkk-verbundplus.de"},
+  {name:"BKK24",typ:"bundesweit",bl:[],zb:4.39,url:"https://www.bkk24.de/",antrag:"online",
+   post:"BKK24\nRobert-Koch-Straße 1\n31137 Hildesheim",email:"info@bkk24.de"},
+  {name:"Continentale BKK",typ:"bundesweit",bl:[],zb:3.00,url:"https://www.continentale-bkk.de/",antrag:"online",
+   post:"Continentale BKK\nRuhrallee 92\n44139 Dortmund",email:"info@continentale-bkk.de"},
+  {name:"Deutsche BKK",typ:"bundesweit",bl:[],zb:3.00,url:"https://www.deutschebkk.de/",antrag:"online",
+   post:"Deutsche BKK\nGliesmaroder Straße 79\n38106 Braunschweig",email:"info@deutschebkk.de"},
+  {name:"energie-BKK",typ:"bundesweit",bl:[],zb:2.40,url:"https://www.energie-bkk.de/",antrag:"online",
+   post:"energie-BKK\nOldenburger Allee 24\n30659 Hannover",email:"info@energie-bkk.de"},
+  {name:"mhplus BKK",typ:"bundesweit",bl:[],zb:2.19,url:"https://www.mhplus-bkk.de/",antrag:"online",
+   post:"mhplus BKK\nPatentstraße 10\n73529 Schwäbisch Gmünd",email:"info@mhplus-bkk.de"},
+  {name:"Mobil Krankenkasse",typ:"bundesweit",bl:[],zb:2.80,url:"https://www.mobilkrankenkasse.de/",antrag:"online",
+   post:"Mobil Krankenkasse\nHessbrühlstraße 11\n70565 Stuttgart",email:"info@mobilkrankenkasse.de"},
+  {name:"Pronova BKK",typ:"bundesweit",bl:[],zb:2.60,url:"https://www.pronovabkk.de/",antrag:"online",
+   post:"Pronova BKK\nPhilipsbornstraße 1\n30165 Hannover",email:"info@pronovabkk.de"},
+  {name:"R+V BKK",typ:"bundesweit",bl:[],zb:2.79,url:"https://www.ruv-bkk.de/",antrag:"online",
+   post:"R+V BKK\nRaiffeisenplatz 1\n65189 Wiesbaden",email:"info@ruv-bkk.de"},
+  {name:"Salus BKK",typ:"bundesweit",bl:[],zb:3.09,url:"https://www.salusbkk.de/",antrag:"online",
+   post:"Salus BKK\nPodbielskistraße 130\n30177 Hannover",email:"info@salusbkk.de"},
+  {name:"SBK – Siemens-Betriebskrankenkasse",typ:"bundesweit",bl:[],zb:3.50,url:"https://www.sbk.org/",antrag:"online",
+   post:"SBK – Siemens-Betriebskrankenkasse\nZielstattstraße 48\n81379 München",email:"info@sbk.org"},
+  {name:"SECURVITA BKK",typ:"bundesweit",bl:[],zb:2.39,url:"https://www.securvita.de/",antrag:"online",
+   post:"SECURVITA BKK\nLerchenstraße 56\n22767 Hamburg",email:"info@securvita.de"},
+  {name:"TUI BKK",typ:"bundesweit",bl:[],zb:2.59,url:"https://www.tui-bkk.de/",antrag:"online",
+   post:"TUI BKK\nKarl-Wiechert-Allee 23\n30625 Hannover",email:"service@tui-bkk.de"},
+  {name:"Viactiv Krankenkasse",typ:"bundesweit",bl:[],zb:2.99,url:"https://www.viactiv.de/",antrag:"online",
+   post:"Viactiv Krankenkasse\nMerkurstraße 2\n44575 Castrop-Rauxel",email:"service@viactiv.de"},
+  {name:"vivida bkk",typ:"bundesweit",bl:[],zb:2.69,url:"https://www.vividabkk.de/",antrag:"online",
+   post:"vivida bkk\nEglosheimer Straße 65\n71636 Ludwigsburg",email:"info@vividabkk.de"},
+
+  // ─── BKK regional ──────────────────────────────────────────────────
+  {name:"BERGISCHE KRANKENKASSE",typ:"regional",bl:["Hamburg","Hessen","Nordrhein-Westfalen"],zb:3.79,url:"https://www.bergische-krankenkasse.de/",antrag:"online",
+   post:"BERGISCHE KRANKENKASSE\nKölner Straße 110\n42651 Solingen",email:"info@bergische-krankenkasse.de"},
+  {name:"Bertelsmann BKK",typ:"regional",bl:["Baden-Württemberg","Bayern","Berlin","Hamburg","Hessen","Mecklenburg-Vorpommern","Niedersachsen","Nordrhein-Westfalen","Sachsen","Thüringen"],zb:3.20,url:"",antrag:"keiner",
+   post:"Bertelsmann BKK\nCarl-Bertelsmann-Straße 270\n33311 Gütersloh",email:"info@bertelsmann-bkk.de"},
+  {name:"BKK Akzo Nobel Bayern",typ:"regional",bl:["Bayern"],zb:3.39,url:"",antrag:"keiner",
+   post:"BKK Akzo Nobel Bayern\nIchostraße 26\n80636 München",email:""},
+  {name:"BKK Diakonie",typ:"regional",bl:["Baden-Württemberg","Bayern","Berlin","Brandenburg","Bremen","Hamburg","Hessen","Mecklenburg-Vorpommern","Niedersachsen","Nordrhein-Westfalen","Rheinland-Pfalz","Sachsen","Sachsen-Anhalt","Schleswig-Holstein"],zb:3.80,url:"https://www.bkk-diakonie.de/",antrag:"online",
+   post:"BKK Diakonie\nKirchstraße 9\n33617 Bielefeld",email:"info@bkk-diakonie.de"},
+  {name:"BKK EUREGIO",typ:"regional",bl:["Hamburg","Nordrhein-Westfalen"],zb:3.39,url:"https://www.bkk-euregio.de/",antrag:"online",
+   post:"BKK EUREGIO\nKönigsberger Straße 3\n48529 Nordhorn",email:"kontakt@bkk-euregio.de"},
+  {name:"BKK exklusiv",typ:"regional",bl:["Bremen","Mecklenburg-Vorpommern","Niedersachsen","Nordrhein-Westfalen","Sachsen-Anhalt","Schleswig-Holstein"],zb:3.49,url:"",antrag:"keiner",
+   post:"BKK exklusiv\nKreuzstraße 38\n59302 Oelde",email:"info@bkk-exklusiv.de"},
+  {name:"BKK Faber-Castell & Partner",typ:"regional",bl:["Bayern"],zb:2.48,url:"https://www.bkk-faber-castell.de/",antrag:"online",
+   post:"BKK Faber-Castell & Partner\nSandbachstraße 6\n90546 Stein",email:"info@bkk-faber-castell.de"},
+  {name:"BKK firmus",typ:"regional",bl:["Baden-Württemberg","Bayern","Berlin","Bremen","Hamburg","Hessen","Niedersachsen","Nordrhein-Westfalen","Sachsen","Sachsen-Anhalt"],zb:2.18,url:"https://www.bkk-firmus.de/",antrag:"online",
+   post:"BKK firmus\nGewerbepark 1\n28790 Schwanewede",email:"kontakt@bkk-firmus.de"},
+  {name:"BKK Freudenberg",typ:"regional",bl:["Baden-Württemberg","Bayern","Berlin","Hessen","Niedersachsen","Nordrhein-Westfalen","Rheinland-Pfalz","Sachsen"],zb:2.99,url:"https://www.bkk-freudenberg.de/",antrag:"online",
+   post:"BKK Freudenberg\nHöhnerweg 2–4\n69469 Weinheim",email:"service@bkk-freudenberg.de"},
+  {name:"BKK Herkules",typ:"regional",bl:["Bayern","Hessen","Niedersachsen"],zb:4.38,url:"https://www.bkk-herkules.de/",antrag:"online",
+   post:"BKK Herkules\nFuldastraße 21\n34125 Kassel",email:"kontakt@bkk-herkules.de"},
+  {name:"bkk melitta hmr",typ:"regional",bl:["Baden-Württemberg","Bayern","Brandenburg","Bremen","Hessen","Niedersachsen","Nordrhein-Westfalen","Sachsen","Sachsen-Anhalt","Schleswig-Holstein"],zb:3.90,url:"https://www.bkk-melitta-hmr.de/",antrag:"online",
+   post:"bkk melitta hmr\nBerners Feld 1\n32047 Herford",email:"info@bkk-melitta-hmr.de"},
+  {name:"BKK PFAFF",typ:"regional",bl:["Rheinland-Pfalz"],zb:2.78,url:"https://www.bkk-pfaff.de/",antrag:"online",
+   post:"BKK PFAFF\nHeinrich-Lanz-Straße 67\n67657 Kaiserslautern",email:"service@bkk-pfaff.de"},
+  {name:"BKK Public",typ:"regional",bl:["Hamburg","Niedersachsen","Nordrhein-Westfalen"],zb:2.50,url:"https://www.bkk-public.de/",antrag:"online",
+   post:"BKK Public\nKarl-Wiechert-Allee 23\n30625 Hannover",email:"info@bkk-public.de"},
+  {name:"BKK SBH",typ:"regional",bl:["Baden-Württemberg"],zb:2.79,url:"https://www.bkk-sbh.de/",antrag:"online",
+   post:"BKK SBH\nBöblinger Straße 76\n70199 Stuttgart",email:"info@bkk-sbh.de"},
+  {name:"BKK Scheufelen",typ:"regional",bl:["Baden-Württemberg"],zb:3.99,url:"https://www.bkk-scheufelen.de/",antrag:"online",
+   post:"BKK Scheufelen\nPapierfabrik 1\n73268 Lenningen",email:"info@bkk-scheufelen.de"},
+  {name:"BKK Technoform",typ:"regional",bl:["Baden-Württemberg","Bayern","Niedersachsen","Rheinland-Pfalz"],zb:3.49,url:"https://www.bkk-technoform.de/",antrag:"online",
+   post:"BKK Technoform\nHumboldtstraße 8\n31008 Elze",email:"info@bkk-technoform.de"},
+  {name:"BKK VDN",typ:"regional",bl:["Hamburg","Nordrhein-Westfalen","Sachsen"],zb:3.19,url:"https://www.bkk-vdn.de/",antrag:"online",
+   post:"BKK VDN\nMonschauer Straße 7\n40549 Düsseldorf",email:"info@bkk-vdn.de"},
+  {name:"BKK Werra-Meissner",typ:"regional",bl:["Bayern","Hessen"],zb:4.35,url:"https://www.bkk-werra-meissner.de/",antrag:"online",
+   post:"BKK Werra-Meissner\nKundenzentrum\nRotenburger Straße 2\n34212 Melsungen",email:"info@bkk-werra-meissner.de"},
+  {name:"BKK Wirtschaft & Finanzen",typ:"regional",bl:["Baden-Württemberg","Bayern","Berlin","Brandenburg","Bremen","Hamburg","Hessen","Niedersachsen","Nordrhein-Westfalen","Rheinland-Pfalz","Saarland","Sachsen"],zb:3.99,url:"https://www.bkk-wf.de/",antrag:"online",
+   post:"BKK Wirtschaft & Finanzen\nKarl-Friedrich-Straße 10\n76133 Karlsruhe",email:"info@bkk-wf.de"},
+  {name:"BKK DürkoppAdler",typ:"regional",bl:["Nordrhein-Westfalen"],zb:3.88,url:"",antrag:"online",
+   post:"BKK DürkoppAdler\nBielefelder Straße 1\n33649 Bielefeld",email:""},
+  {name:"Bosch BKK",typ:"regional",bl:["Baden-Württemberg","Bayern","Berlin","Brandenburg","Hamburg","Hessen","Mecklenburg-Vorpommern","Niedersachsen","Nordrhein-Westfalen","Rheinland-Pfalz","Sachsen","Sachsen-Anhalt","Thüringen"],zb:3.20,url:"https://www.bosch-bkk.de/",antrag:"online",
+   post:"Bosch BKK\nFahnenstraße 19\n70469 Stuttgart",email:"service@bosch-bkk.de"},
+  {name:"Koenig & Bauer BKK",typ:"regional",bl:["Bayern","Nordrhein-Westfalen"],zb:2.30,url:"https://www.koenig-bauer-bkk.de/",antrag:"online",
+   post:"Koenig & Bauer BKK\nFriedrich-Koenig-Straße 4\n97080 Würzburg",email:"info@koenig-bauer-bkk.de"},
+  {name:"Krones BKK",typ:"regional",bl:["Bayern"],zb:2.90,url:"https://www.krones-bkk.de/",antrag:"online",
+   post:"Krones BKK\nBöhmerwaldstraße 5\n93073 Neutraubling",email:"info@krones-bkk.de"},
+  {name:"mkk – meine krankenkasse",typ:"regional",bl:["Bayern","Berlin","Brandenburg","Hamburg","Hessen","Niedersachsen","Nordrhein-Westfalen","Sachsen"],zb:2.99,url:"https://www.mkk.de/",antrag:"online",
+   post:"mkk – meine krankenkasse\nGrimmaische Straße 23\n04109 Leipzig",email:"service@mkk.de"},
+  {name:"novitas BKK",typ:"regional",bl:["Nordrhein-Westfalen","Sachsen"],zb:3.25,url:"https://www.novitas-bkk.de/",antrag:"online",
+   post:"novitas BKK\nHauptverwaltung\nHohenzollernstraße 55\n45128 Essen",email:"info@novitas-bkk.de"},
+  {name:"SKD BKK",typ:"regional",bl:["Bayern"],zb:3.69,url:"https://www.skdbkk.de/",antrag:"online",
+   post:"SKD BKK\nLöwenstraße 10\n89231 Neu-Ulm",email:"info@skdbkk.de"},
+  {name:"uniVersa BKK",typ:"regional",bl:["Bayern","Nordrhein-Westfalen"],zb:3.19,url:"https://www.universa-bkk.de/",antrag:"online",
+   post:"uniVersa BKK\nSulzbacher Straße 1–7\n90489 Nürnberg",email:"info@universa-bkk.de"},
+  {name:"WMF BKK",typ:"regional",bl:["Baden-Württemberg"],zb:3.60,url:"https://www.wmfbkk.de/",antrag:"online",
+   post:"WMF BKK\nFabrikstraße 1\n73312 Geislingen",email:"info@wmfbkk.de"},
+  {name:"Würth BKK",typ:"regional",bl:["Baden-Württemberg"],zb:2.99,url:"https://www.wuerth-bkk.de/",antrag:"online",
+   post:"Würth BKK\nReinhold-Würth-Straße 12–17\n74653 Künzelsau",email:"info@wuerth-bkk.de"},
+  {name:"Metzinger BKK",typ:"regional",bl:["Baden-Württemberg"],zb:2.99,url:"",antrag:"online",
+   post:"Metzinger BKK\nHugo-Boss-Straße 1\n72555 Metzingen",email:""},
+];
+
+let activeTyp = '';
+
+function setTyp(el, typ) {
+  activeTyp = typ;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active-all','active-bund','active-reg'));
+  const cls = typ===''?'active-all':typ==='bundesweit'?'active-bund':'active-reg';
+  el.classList.add(cls);
+  filter();
+}
+
+function zbClass(zb) {
+  if (zb < 2.50) return 'zb-low';
+  if (zb > 3.50) return 'zb-high';
+  return 'zb-mid';
+}
+
+function renderBL(k) {
+  if (k.typ==='bundesweit') return '<span style="color:var(--text-light);font-size:12px">Alle 16 Bundesländer</span>';
+  return k.bl.join(', ');
+}
+
+function renderAntrag(k) {
+  if (k.antrag==='keiner' || !k.url) return '<span class="ant-none">—</span>';
+  const icon = k.antrag==='pdf'
+    ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+    : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+  const cls = k.antrag==='pdf' ? 'ant-btn pdf' : 'ant-btn';
+  const lbl = k.antrag==='pdf' ? 'PDF-Antrag' : 'Online-Antrag';
+  return `<a href="${k.url}" target="_blank" class="${cls}" rel="noopener" onclick="event.stopPropagation()">${icon} ${lbl}</a>`;
+}
+
+function badgeTyp(t) {
+  if (t==='bundesweit') return '<span class="badge b-bund">Bundesweit</span>';
+  return '<span class="badge b-reg">Regional</span>';
+}
+
+function renderContactPills(k) {
+  const hasPost = k.post && k.post.trim();
+  const hasEmail = k.email && k.email.trim();
+  let html = '<div class="contact-pills">';
+  html += `<span class="contact-pill ${hasPost?'has-data':'no-data'}">`;
+  html += `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> `;
+  html += hasPost ? 'Adresse' : 'keine Adresse';
+  html += '</span>';
+  html += `<span class="contact-pill ${hasEmail?'has-data':'no-data'}">`;
+  html += `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> `;
+  html += hasEmail ? 'E-Mail' : 'kein E-Mail';
+  html += '</span>';
+  html += '</div>';
+  return html;
+}
+
+function renderDetail(k) {
+  const postHtml = k.post ? k.post.replace(/\n/g,'<br>') : '<span class="detail-empty">nicht verifiziert</span>';
+  let emailHtml = '';
+  if (k.email) {
+    if (k.emaillink) {
+      emailHtml = `<a href="${k.emaillink}" target="_blank" rel="noopener">${k.email}</a>`;
+    } else if (k.email.includes('@')) {
+      emailHtml = `<a href="mailto:${k.email}">${k.email}</a>`;
+    } else {
+      emailHtml = k.email;
+    }
+  } else {
+    emailHtml = '<span class="detail-empty">nicht verifiziert</span>';
+  }
+
+  return `<div class="detail-inner">
+    <div class="detail-block">
+      <div class="detail-label">📮 Postanschrift (Antrag/Post)</div>
+      <div class="detail-val">${postHtml}</div>
+    </div>
+    <div class="detail-block">
+      <div class="detail-label">✉️ E-Mail / Kontakt</div>
+      <div class="detail-val">${emailHtml}</div>
+    </div>
+    <div class="detail-block">
+      <div class="detail-label">🌐 Website</div>
+      <div class="detail-val">${k.url ? `<a href="${k.url}" target="_blank" rel="noopener">${k.url}</a>` : '<span class="detail-empty">—</span>'}</div>
+    </div>
+  </div>`;
+}
+
+function toggleRow(id) {
+  const main = document.getElementById('main-' + id);
+  const detail = document.getElementById('detail-' + id);
+  const isOpen = detail.classList.contains('visible');
+  // close all
+  document.querySelectorAll('.main-row.open').forEach(r => r.classList.remove('open'));
+  document.querySelectorAll('.detail-row.visible').forEach(r => r.classList.remove('visible'));
+  if (!isOpen) {
+    main.classList.add('open');
+    detail.classList.add('visible');
+  }
+}
+
+function filter() {
+  const q   = document.getElementById('search').value.toLowerCase().trim();
+  const bl  = document.getElementById('sel-bl').value;
+  const ant = document.getElementById('sel-antrag').value;
+
+  const rows = KK.filter(k => {
+    if (k.typ === 'betrieb') return false;
+    if (q && !k.name.toLowerCase().includes(q)) return false;
+    if (activeTyp && k.typ !== activeTyp) return false;
+    if (bl && k.typ !== 'bundesweit' && !k.bl.includes(bl)) return false;
+    if (ant === 'online' && k.antrag !== 'online') return false;
+    if (ant === 'pdf'    && k.antrag !== 'pdf')    return false;
+    if (ant === 'keiner' && k.antrag !== 'keiner') return false;
+    return true;
+  });
+
+  let bund=0, reg=0;
+  rows.forEach(k => { if(k.typ==='bundesweit') bund++; else reg++; });
+  document.getElementById('cnt-ges').textContent  = rows.length;
+  document.getElementById('cnt-bund').textContent = bund;
+  document.getElementById('cnt-reg').textContent  = reg;
+  document.getElementById('result-label').textContent = rows.length + (rows.length===1?' Kasse':' Kassen');
+
+  const tb = document.getElementById('tbody');
+  const nr = document.getElementById('no-results');
+  if (!rows.length) { tb.innerHTML=''; nr.style.display='block'; return; }
+  nr.style.display='none';
+
+  tb.innerHTML = rows.map((k,i) => {
+    const id = 'k' + i;
+    return `
+    <tr class="main-row" id="main-${id}" onclick="toggleRow('${id}')">
+      <td><div class="expand-btn">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </div></td>
+      <td class="td-name">${k.url ? `<a href="${k.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${k.name}</a>` : k.name}</td>
+      <td>${badgeTyp(k.typ)}</td>
+      <td class="td-bl">${renderBL(k)}</td>
+      <td class="td-zb ${zbClass(k.zb)}">${k.zb.toFixed(2).replace('.',',')} %</td>
+      <td>${renderAntrag(k)}</td>
+      <td>${renderContactPills(k)}</td>
+    </tr>
+    <tr class="detail-row" id="detail-${id}">
+      <td colspan="7">${renderDetail(k)}</td>
+    </tr>`;
+  }).join('');
+}
+
+filter();
+</script>
+</body>
+</html>
